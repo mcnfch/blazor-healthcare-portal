@@ -20,6 +20,7 @@ This project showcases professional software engineering skills through:
 **Backend:** ASP.NET Core 8 • Entity Framework Core • PostgreSQL • gRPC • JWT Authentication  
 **Frontend:** Blazor Server • Bootstrap 5 • JavaScript • SignalR  
 **Infrastructure:** Docker • Docker Compose • Nginx • RabbitMQ  
+**Cloud:** AWS Aurora PostgreSQL • AWS RDS • AWS VPC Security Groups  
 **Development:** Git • CI/CD • RESTful APIs • Microservices Architecture
 
 ## 🏗️ Architecture
@@ -30,7 +31,7 @@ This system follows a microservices architecture with the following components:
 - **Document Service**: gRPC service for document processing and metadata extraction
 - **API Gateway**: REST API gateway with authentication and routing
 - **Frontend**: Blazor Server application with responsive UI and real-time updates
-- **Database**: PostgreSQL for data persistence
+- **Database**: AWS Aurora PostgreSQL cluster for scalable data persistence
 - **Message Queue**: RabbitMQ for event-driven communication
 - **Reverse Proxy**: Nginx with SSL termination and load balancing
 

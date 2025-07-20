@@ -71,6 +71,10 @@ obj/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# AWS configuration and credentials
+AWS/
+aws/
 appsettings.*.json
 !appsettings.json
 !appsettings.Development.json
