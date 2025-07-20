@@ -1,0 +1,514 @@
+@page "/adjuster/documents"
+@using Microsoft.AspNetCore.Authorization
+@using BlazorApp.Services
+@using BlazorApp.Models.DTOs
+@using Microsoft.AspNetCore.Components.Forms
+@attribute [Authorize]
+@inject IDocumentService DocumentService
+@inject IClaimsService ClaimsService
+@inject IPatientService PatientService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<PageTitle>Documents</PageTitle>
+
+<h1><i class="fas fa-folder-open me-2"></i>My Documents</h1>
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <!-- Document Upload -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-cloud-upload-alt me-2"></i>Upload Document</h5>
+            </div>
+            <div class="card-body">
+                <EditForm Model="uploadModel" OnValidSubmit="HandleUpload">
+                    <div class="mb-3">
+                        <label for="claimSelect" class="form-label">Associated Claim</label>
+                        <select @bind="uploadModel.ClaimId" class="form-select" id="claimSelect">
+                            <option value="">Select a claim</option>
+                            @foreach (var claim in claims)
+                            {
+                                <option value="@claim.Id">@claim.ClaimNumber - @claim.ProviderInfo?.ProviderName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="documentType" class="form-label">Document Type</label>
+                        <select @bind="uploadModel.DocumentType" class="form-select" id="documentType">
+                            <option value="">Select type</option>
+                            <option value="Medical Record">Medical Record</option>
+                            <option value="Invoice">Invoice</option>
+                            <option value="Receipt">Receipt</option>
+                            <option value="Lab Result">Lab Result</option>
+                            <option value="Prescription">Prescription</option>
+                            <option value="Insurance Card">Insurance Card</option>
+                            <option value="ID Document">ID Document</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fileInput" class="form-label">Select File</label>
+                        <InputFile OnChange="OnFileSelected" class="form-control" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx" />
+                        <div class="form-text">Supported formats: PDF, JPG, PNG, GIF, DOC, DOCX. Max size: 10MB</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success" disabled="@isUploading">
+                            @if (isUploading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                <text>Uploading...</text>
+                            }
+                            else
+                            {
+                                <i class="fas fa-upload me-2"></i>
+                                <text>Upload Document</text>
+                            }
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+
+        <!-- Filter Panel -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-filter me-2"></i>Filters</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="filterClaim" class="form-label">Filter by Claim</label>
+                    <select @bind="selectedClaimFilter" @bind:after="FilterDocuments" class="form-select" id="filterClaim">
+                        <option value="">All Claims</option>
+                        @foreach (var claim in claims)
+                        {
+                            <option value="@claim.Id">@claim.ClaimNumber</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="filterType" class="form-label">Document Type</label>
+                    <select @bind="selectedTypeFilter" @bind:after="FilterDocuments" class="form-select" id="filterType">
+                        <option value="">All Types</option>
+                        <option value="Medical Record">Medical Record</option>
+                        <option value="Invoice">Invoice</option>
+                        <option value="Receipt">Receipt</option>
+                        <option value="Lab Result">Lab Result</option>
+                        <option value="Prescription">Prescription</option>
+                        <option value="Insurance Card">Insurance Card</option>
+                        <option value="ID Document">ID Document</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <button class="btn btn-outline-secondary w-100" @onclick="ClearFilters">
+                    <i class="fas fa-times me-2"></i>Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document List -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Document Library</h5>
+                <button class="btn btn-outline-primary btn-sm" @onclick="RefreshDocuments">
+                    <i class="fas fa-refresh me-2"></i>Refresh
+                </button>
+            </div>
+            <div class="card-body">
+                @if (loading)
+                {
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+                else if (!filteredDocuments.Any())
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                        <h5>No Documents Found</h5>
+                        <p class="text-muted">Upload your first document to get started.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Type</th>
+                                    <th>Claim</th>
+                                    <th>Size</th>
+                                    <th>Uploaded</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var document in filteredDocuments)
+                                {
+                                    <tr>
+                                        <td>
+                                            <i class="fas @GetFileIcon(document.MimeType) me-2"></i>
+                                            <strong>@document.Filename</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">@document.DocumentType</span>
+                                        </td>
+                                        <td>
+                                            @{
+                                                var claim = claims.FirstOrDefault(c => c.Id == document.ClaimId);
+                                            }
+                                            @if (claim != null)
+                                            {
+                                                <a href="/claims/@claim.Id" class="text-decoration-none">
+                                                    @claim.ClaimNumber
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">N/A</span>
+                                            }
+                                        </td>
+                                        <td>@FormatFileSize(document.FileSize)</td>
+                                        <td>@DateTime.Parse(document.UploadDate).ToString("MMM dd, yyyy")</td>
+                                        <td>
+                                            @if (document.IsProcessed)
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i>Processed
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-clock me-1"></i>Processing
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewDocument(document)" title="View">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-info" @onclick="() => DownloadDocument(document)" title="Download">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteDocument(document)" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (totalDocuments > filteredDocuments.Count)
+                    {
+                        <div class="text-center mt-3">
+                            <p class="text-muted">
+                                Showing @filteredDocuments.Count of @totalDocuments documents
+                            </p>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<DocumentDto> allDocuments = new();
+    private List<DocumentDto> filteredDocuments = new();
+    private List<ClaimResponse> claims = new();
+    private DocumentUploadModel uploadModel = new();
+    private IBrowserFile? selectedFile;
+    private bool loading = true;
+    private bool isUploading = false;
+    private string? successMessage;
+    private string? errorMessage;
+    private int selectedClaimFilter = 0;
+    private string selectedTypeFilter = string.Empty;
+    private int totalDocuments = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            loading = true;
+            
+            // Load claims for current user only
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out var userId))
+                {
+                    var patient = await PatientService.GetPatientByUserIdAsync(userId);
+                    if (patient != null)
+                    {
+                        claims = await ClaimsService.GetClaimsByPatientAsync(patient.Id);
+                    }
+                    else
+                    {
+                        claims = new List<ClaimResponse>();
+                    }
+                }
+                else
+                {
+                    claims = new List<ClaimResponse>();
+                }
+            }
+            else
+            {
+                claims = new List<ClaimResponse>();
+            }
+            
+            // Load documents for all claims sequentially to avoid DbContext conflicts
+            allDocuments = new List<DocumentDto>();
+            foreach (var claim in claims)
+            {
+                var docs = await DocumentService.GetClaimDocumentsAsync(claim.Id);
+                allDocuments.AddRange(docs);
+            }
+            totalDocuments = allDocuments.Count;
+            
+            // Initially show all documents
+            filteredDocuments = allDocuments.ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading documents: {ex.Message}";
+            Console.WriteLine($"Error loading documents: {ex}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task RefreshDocuments()
+    {
+        await LoadData();
+        successMessage = "Documents refreshed successfully";
+        await Task.Delay(3000);
+        successMessage = null;
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+        if (selectedFile != null && selectedFile.Size > 10 * 1024 * 1024) // 10MB limit
+        {
+            errorMessage = "File size exceeds 10MB limit";
+            selectedFile = null;
+        }
+        else
+        {
+            errorMessage = null;
+        }
+    }
+
+    private async Task HandleUpload()
+    {
+        if (selectedFile == null)
+        {
+            errorMessage = "Please select a file";
+            return;
+        }
+        
+        if (uploadModel.ClaimId == 0)
+        {
+            errorMessage = "Please select a claim";
+            return;
+        }
+        
+        if (string.IsNullOrEmpty(uploadModel.DocumentType))
+        {
+            errorMessage = "Please select a document type";
+            return;
+        }
+
+        try
+        {
+            isUploading = true;
+            errorMessage = null;
+
+            // Read file data properly to avoid corruption
+            var maxFileSize = 10 * 1024 * 1024; // 10MB
+            using var memoryStream = new MemoryStream();
+            using var fileStream = selectedFile.OpenReadStream(maxFileSize);
+            await fileStream.CopyToAsync(memoryStream);
+            var buffer = memoryStream.ToArray();
+
+            // Get current user ID
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var userId = userIdClaim != null && int.TryParse(userIdClaim.Value, out var id) ? id : 1;
+
+            // Upload document
+            var response = await DocumentService.UploadDocumentAsync(
+                uploadModel.ClaimId,
+                selectedFile.Name,
+                buffer,
+                selectedFile.ContentType,
+                uploadModel.DocumentType,
+                userId
+            );
+
+            if (response.Success)
+            {
+                successMessage = "Document uploaded successfully!";
+                
+                // Reset form
+                uploadModel = new DocumentUploadModel();
+                selectedFile = null;
+                
+                // Wait a moment then refresh documents to avoid concurrency issues
+                await Task.Delay(500);
+                await LoadData();
+            }
+            else
+            {
+                errorMessage = response.Message ?? "Upload failed";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error uploading document: {ex.Message}";
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+
+    private async Task FilterDocuments()
+    {
+        await Task.Delay(100); // Small delay for responsiveness
+        
+        filteredDocuments = allDocuments.Where(doc =>
+        {
+            var matchesClaim = selectedClaimFilter == 0 || doc.ClaimId == selectedClaimFilter;
+            var matchesType = string.IsNullOrEmpty(selectedTypeFilter) || doc.DocumentType == selectedTypeFilter;
+            
+            return matchesClaim && matchesType;
+        }).ToList();
+        
+        StateHasChanged();
+    }
+
+    private async Task ClearFilters()
+    {
+        selectedClaimFilter = 0;
+        selectedTypeFilter = string.Empty;
+        await FilterDocuments();
+    }
+
+    private async Task ViewDocument(DocumentDto document)
+    {
+        // Open document in a viewer or new tab
+        await JSRuntime.InvokeVoidAsync("window.open", $"/api/documents/{document.Id}/view", "_blank");
+    }
+
+    private async Task DownloadDocument(DocumentDto document)
+    {
+        // Trigger a download
+        await JSRuntime.InvokeVoidAsync("window.open", $"/api/documents/{document.Id}/download", "_blank");
+    }
+
+    private async Task DeleteDocument(DocumentDto document)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", $"Are you sure you want to delete '{document.Filename}'?"))
+        {
+            try
+            {
+                // Get current user ID
+                var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+                var user = authState.User;
+                var userIdClaim = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                var userId = userIdClaim != null && int.TryParse(userIdClaim.Value, out var id) ? id : 1;
+
+                var success = await DocumentService.DeleteDocumentAsync(document.Id, userId);
+                
+                if (success)
+                {
+                    successMessage = $"Document '{document.Filename}' deleted successfully";
+                    await LoadData();
+                }
+                else
+                {
+                    errorMessage = "Failed to delete document";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Error deleting document: {ex.Message}";
+            }
+        }
+    }
+
+    private string GetFileIcon(string mimeType)
+    {
+        return mimeType?.ToLower() switch
+        {
+            var mt when mt.StartsWith("image/") => "fa-image",
+            "application/pdf" => "fa-file-pdf",
+            var mt when mt.StartsWith("application/vnd.openxmlformats-officedocument.wordprocessingml") => "fa-file-word",
+            var mt when mt.StartsWith("application/msword") => "fa-file-word",
+            var mt when mt.StartsWith("application/vnd.openxmlformats-officedocument.spreadsheetml") => "fa-file-excel",
+            var mt when mt.StartsWith("application/vnd.ms-excel") => "fa-file-excel",
+            _ => "fa-file"
+        };
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len = len / 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    public class DocumentUploadModel
+    {
+        public int ClaimId { get; set; }
+        public string DocumentType { get; set; } = string.Empty;
+    }
+}

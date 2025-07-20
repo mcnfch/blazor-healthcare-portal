@@ -1,0 +1,179 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">
+            <i class="fas fa-hospital-alt me-2"></i>
+            Healthcare Portal
+        </a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <AuthorizeView Context="mainNav">
+            <Authorized>
+                <!-- Dashboard -->
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                        <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                    </NavLink>
+                </div>
+
+                <!-- Patient/User specific menu -->
+                <AuthorizeView Roles="patient" Context="patientNav">
+                    <Authorized>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="claims">
+                                <i class="fas fa-file-medical me-2"></i> My Claims
+                            </NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="claims/submit">
+                                <i class="fas fa-plus-circle me-2"></i> Submit Claim
+                            </NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="providers">
+                                <i class="fas fa-user-md me-2"></i> Find Providers
+                            </NavLink>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+
+                <!-- Provider specific menu -->
+                <AuthorizeView Roles="provider" Context="providerNav">
+                    <Authorized>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="provider/claims">
+                                <i class="fas fa-clipboard-list me-2"></i> Patient Claims
+                            </NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="provider/patients">
+                                <i class="fas fa-users me-2"></i> My Patients
+                            </NavLink>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+
+                <!-- Admin menu -->
+                <AuthorizeView Roles="admin" Context="adminNav">
+                    <Authorized>
+                        <div class="nav-section">
+                            <div class="nav-section-title px-3 mt-3 mb-2">
+                                <small class="text-muted text-uppercase fw-bold">Administration</small>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/dashboard">
+                                    <i class="fas fa-chart-line me-2"></i> Admin Dashboard
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/claims">
+                                    <i class="fas fa-clipboard-check me-2"></i> All Claims
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/claims/submit">
+                                    <i class="fas fa-plus-circle me-2"></i> Submit Claim
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/providers">
+                                    <i class="fas fa-hospital me-2"></i> Find Providers
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/documents">
+                                    <i class="fas fa-folder-open me-2"></i> Documents
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/patients">
+                                    <i class="fas fa-user-injured me-2"></i> Patients
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="admin/reports">
+                                    <i class="fas fa-chart-bar me-2"></i> Reports
+                                </NavLink>
+                            </div>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+
+                <!-- Claims Adjuster menu - only what's needed for processing claims -->
+                <AuthorizeView Roles="claims_adjuster" Context="adjusterNav">
+                    <Authorized>
+                        <div class="nav-section">
+                            <div class="nav-section-title px-3 mt-3 mb-2">
+                                <small class="text-muted text-uppercase fw-bold">Claims Adjuster</small>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="adjuster/claims">
+                                    <i class="fas fa-clipboard-check me-2"></i> All Claims
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="adjuster/claims/submit">
+                                    <i class="fas fa-plus-circle me-2"></i> Submit Claim
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="adjuster/providers">
+                                    <i class="fas fa-hospital me-2"></i> Find Providers
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="adjuster/documents">
+                                    <i class="fas fa-folder-open me-2"></i> Documents
+                                </NavLink>
+                            </div>
+                            <div class="nav-item px-3">
+                                <NavLink class="nav-link" href="adjuster/patients">
+                                    <i class="fas fa-user-injured me-2"></i> Patients
+                                </NavLink>
+                            </div>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+
+                <!-- Universal menu items -->
+                <div class="nav-section">
+                    <div class="nav-section-title px-3 mt-3 mb-2">
+                        <small class="text-muted text-uppercase fw-bold">Account</small>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="profile">
+                            <i class="fas fa-user me-2"></i> My Profile
+                        </NavLink>
+                    </div>
+                </div>
+
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="login">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+</div>
+
+<style>
+    .nav-section-title {
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 0.75rem;
+    }
+    
+    .nav-section-title:first-child {
+        border-top: none;
+        padding-top: 0;
+    }
+</style>

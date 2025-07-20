@@ -1,0 +1,229 @@
+@page "/adjuster/providers"
+@using Microsoft.AspNetCore.Authorization
+@using BlazorApp.Services
+@using BlazorApp.Models.DTOs
+@attribute [Authorize]
+@inject IProviderService ProviderService
+@inject NavigationManager Navigation
+
+<PageTitle>Providers</PageTitle>
+
+<h1><i class="fas fa-user-md me-2"></i>Healthcare Providers</h1>
+
+<div class="row mb-3">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Find Providers</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <input type="text" @bind="searchTerm" @bind:event="oninput" class="form-control" 
+                               placeholder="Search by name or specialty..." @onkeypress="HandleKeyPress">
+                    </div>
+                    <div class="col-md-4">
+                        <select @bind="selectedSpecialty" @bind:after="FilterProviders" class="form-select">
+                            <option value="">All Specialties</option>
+                            @foreach (var specialty in availableSpecialties)
+                            {
+                                <option value="@specialty">@specialty</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary w-100" @onclick="SearchProviders">
+                            <i class="fas fa-search me-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+                
+                @if (loading)
+                {
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+                else if (!filteredProviders.Any())
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-md fa-3x text-muted mb-3"></i>
+                        <h5>No Providers Found</h5>
+                        <p class="text-muted">Try adjusting your search criteria.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Provider</th>
+                                    <th>Type</th>
+                                    <th>Specialties</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var provider in filteredProviders)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@provider.ProviderName</strong>
+                                            <br>
+                                            <small class="text-muted">ID: @provider.ProviderId</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">@provider.ProviderType</span>
+                                        </td>
+                                        <td>
+                                            @if (provider.Specialties?.Any() == true)
+                                            {
+                                                @foreach (var specialty in provider.Specialties.Take(2))
+                                                {
+                                                    <span class="badge bg-light text-dark me-1">@specialty</span>
+                                                }
+                                                @if (provider.Specialties.Count > 2)
+                                                {
+                                                    <small class="text-muted">+@(provider.Specialties.Count - 2) more</small>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">General</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(provider.PhoneNumber))
+                                            {
+                                                <a href="tel:@provider.PhoneNumber" class="text-decoration-none">
+                                                    @provider.PhoneNumber
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">N/A</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge @(provider.IsActive ? "bg-success" : "bg-secondary")">
+                                                @(provider.IsActive ? "Active" : "Inactive")
+                                            </span>
+                                            @if (provider.IsActive && provider.IsAcceptingPatients)
+                                            {
+                                                <br>
+                                                <small class="badge bg-primary mt-1">Accepting Patients</small>
+                                            }
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewProviderDetails(provider.Id)">
+                                                <i class="fas fa-eye me-1"></i>View Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    @if (totalProviders > filteredProviders.Count)
+                    {
+                        <div class="text-center mt-3">
+                            <p class="text-muted">
+                                Showing @filteredProviders.Count of @totalProviders providers
+                            </p>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ProviderDto> allProviders = new();
+    private List<ProviderDto> filteredProviders = new();
+    private List<string> availableSpecialties = new();
+    private string searchTerm = string.Empty;
+    private string selectedSpecialty = string.Empty;
+    private bool loading = true;
+    private int totalProviders = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProviders();
+    }
+
+    private async Task LoadProviders()
+    {
+        try
+        {
+            loading = true;
+            allProviders = await ProviderService.GetAllProvidersAsync();
+            totalProviders = allProviders.Count;
+            
+            // Extract all unique specialties
+            availableSpecialties = allProviders
+                .SelectMany(p => p.Specialties ?? new List<string>())
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+            
+            // Initially show all providers
+            filteredProviders = allProviders.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading providers: {ex.Message}");
+            allProviders = new List<ProviderDto>();
+            filteredProviders = new List<ProviderDto>();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task SearchProviders()
+    {
+        await FilterProviders();
+    }
+
+    private async Task FilterProviders()
+    {
+        await Task.Delay(100); // Small delay to show responsiveness
+        
+        filteredProviders = allProviders.Where(provider =>
+        {
+            // Search term filter
+            var matchesSearchTerm = string.IsNullOrEmpty(searchTerm) ||
+                provider.ProviderName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                (provider.Specialties?.Any(s => s.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)) == true);
+            
+            // Specialty filter
+            var matchesSpecialty = string.IsNullOrEmpty(selectedSpecialty) ||
+                (provider.Specialties?.Contains(selectedSpecialty) == true);
+            
+            return matchesSearchTerm && matchesSpecialty;
+        }).ToList();
+        
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchProviders();
+        }
+    }
+
+    private void ViewProviderDetails(int providerId)
+    {
+        Navigation.NavigateTo($"/providers/{providerId}");
+    }
+}

@@ -1,0 +1,229 @@
+@using BlazorApp.Models.DTOs
+
+<div class="row">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">@(DashboardData?.Stats.TotalClaims ?? 1247)</h3>
+                        <p class="mb-0">Total Claims</p>
+                    </div>
+                    <i class="fas fa-file-medical fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">@(DashboardData?.Stats.PendingClaims ?? 89)</h3>
+                        <p class="mb-0">Pending Review</p>
+                    </div>
+                    <i class="fas fa-clock fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">@avgProcessingDays</h3>
+                        <p class="mb-0">Avg Processing Days</p>
+                    </div>
+                    <i class="fas fa-tachometer-alt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">$@totalPayouts.ToString("N0")</h3>
+                        <p class="mb-0">Total Payouts</p>
+                    </div>
+                    <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar text-primary me-2"></i>
+                    Claims Processing Queue
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Claim #</th>
+                                <th>Patient</th>
+                                <th>Provider</th>
+                                <th>Amount</th>
+                                <th>Days Pending</th>
+                                <th>Priority</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>CLM-2024-001</strong></td>
+                                <td>John Smith</td>
+                                <td>City Medical</td>
+                                <td>$3,200.00</td>
+                                <td>3</td>
+                                <td><span class="badge bg-danger">High</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary">Review</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>CLM-2024-002</strong></td>
+                                <td>Sarah Johnson</td>
+                                <td>Downtown Clinic</td>
+                                <td>$450.00</td>
+                                <td>1</td>
+                                <td><span class="badge bg-success">Normal</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary">Review</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>CLM-2024-003</strong></td>
+                                <td>Michael Davis</td>
+                                <td>Specialty Care</td>
+                                <td>$1,750.00</td>
+                                <td>7</td>
+                                <td><span class="badge bg-warning">Medium</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary">Review</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cogs text-primary me-2"></i>
+                    System Management
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-users me-2"></i>User Management
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-hospital me-2"></i>Provider Network
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-shield-alt me-2"></i>Insurance Plans
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-chart-line me-2"></i>Analytics
+                    </button>
+                    <button class="btn btn-outline-primary" @onclick="NavigateToDocuments">
+                        <i class="fas fa-folder-open me-2"></i>Document Management
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                    System Alerts
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <div class="alert alert-danger alert-sm py-2">
+                        <strong>Critical:</strong> 5 claims over 30 days pending
+                    </div>
+                    <div class="alert alert-warning alert-sm py-2">
+                        <strong>Warning:</strong> Provider payment batch failed
+                    </div>
+                    <div class="alert alert-info alert-sm py-2">
+                        <strong>Info:</strong> System maintenance scheduled
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    Claims Analytics Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="border-end">
+                            <h4 class="text-success">94.2%</h4>
+                            <small class="text-muted">Approval Rate</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border-end">
+                            <h4 class="text-info">4.8 days</h4>
+                            <small class="text-muted">Avg Processing</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border-end">
+                            <h4 class="text-warning">$2.4M</h4>
+                            <small class="text-muted">Monthly Volume</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <h4 class="text-primary">99.1%</h4>
+                        <small class="text-muted">System Uptime</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@inject NavigationManager Navigation
+
+@code {
+    [Parameter] public AdminDashboardResponse? DashboardData { get; set; }
+    
+    private int avgProcessingDays = 5;
+    private decimal totalPayouts = 24500000;
+    
+    private void NavigateToDocuments()
+    {
+        Navigation.NavigateTo("/admin/documents");
+    }
+}

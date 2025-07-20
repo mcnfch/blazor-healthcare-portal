@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package claims;
+
+option go_package = "./proto";
+
+service ClaimsService {
+  rpc SubmitClaim(SubmitClaimRequest) returns (SubmitClaimResponse);
+  rpc GetClaim(GetClaimRequest) returns (GetClaimResponse);
+  rpc UpdateClaimStatus(UpdateClaimStatusRequest) returns (UpdateClaimStatusResponse);
+  rpc ListClaims(ListClaimsRequest) returns (ListClaimsResponse);
+}
+
+message SubmitClaimRequest {
+  int32 user_id = 1;
+  string claim_type = 2;
+  string description = 3;
+  double amount = 4;
+  string incident_date = 5;
+}
+
+message SubmitClaimResponse {
+  bool success = 1;
+  string message = 2;
+  string claim_number = 3;
+  int32 claim_id = 4;
+}
+
+message GetClaimRequest {
+  int32 claim_id = 1;
+}
+
+message GetClaimResponse {
+  bool success = 1;
+  Claim claim = 2;
+}
+
+message UpdateClaimStatusRequest {
+  int32 claim_id = 1;
+  string status = 2;
+}
+
+message UpdateClaimStatusResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ListClaimsRequest {
+  int32 user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListClaimsResponse {
+  bool success = 1;
+  repeated Claim claims = 2;
+  int32 total_count = 3;
+}
+
+message Claim {
+  int32 id = 1;
+  int32 user_id = 2;
+  string claim_number = 3;
+  string status = 4;
+  string claim_type = 5;
+  string description = 6;
+  double amount = 7;
+  string incident_date = 8;
+  string submitted_at = 9;
+  string updated_at = 10;
+}

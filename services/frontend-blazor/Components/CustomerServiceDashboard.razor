@@ -1,0 +1,211 @@
+@using BlazorApp.Models.DTOs
+
+<div class="row">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">@openTickets</h3>
+                        <p class="mb-0">Open Tickets</p>
+                    </div>
+                    <i class="fas fa-ticket-alt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">@pendingInquiries</h3>
+                        <p class="mb-0">Pending Inquiries</p>
+                    </div>
+                    <i class="fas fa-question-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">@avgResponseTime</h3>
+                        <p class="mb-0">Avg Response (hrs)</p>
+                    </div>
+                    <i class="fas fa-clock fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">@satisfactionScore%</h3>
+                        <p class="mb-0">Satisfaction Score</p>
+                    </div>
+                    <i class="fas fa-smile fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-headset text-primary me-2"></i>
+                    Recent Support Requests
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ticket #</th>
+                                <th>Member</th>
+                                <th>Issue Type</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Age</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>TKT-001</strong></td>
+                                <td>John Smith</td>
+                                <td>Claim Status</td>
+                                <td><span class="badge bg-danger">High</span></td>
+                                <td><span class="badge bg-warning">In Progress</span></td>
+                                <td>2hrs</td>
+                                <td><button class="btn btn-sm btn-primary">Respond</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>TKT-002</strong></td>
+                                <td>Sarah Johnson</td>
+                                <td>Benefits Inquiry</td>
+                                <td><span class="badge bg-success">Normal</span></td>
+                                <td><span class="badge bg-info">Assigned</span></td>
+                                <td>1hr</td>
+                                <td><button class="btn btn-sm btn-primary">Respond</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>TKT-003</strong></td>
+                                <td>Michael Davis</td>
+                                <td>Provider Search</td>
+                                <td><span class="badge bg-warning">Medium</span></td>
+                                <td><span class="badge bg-primary">New</span></td>
+                                <td>30min</td>
+                                <td><button class="btn btn-sm btn-primary">Assign</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>TKT-004</strong></td>
+                                <td>Emily Wilson</td>
+                                <td>Payment Issue</td>
+                                <td><span class="badge bg-danger">High</span></td>
+                                <td><span class="badge bg-warning">In Progress</span></td>
+                                <td>4hrs</td>
+                                <td><button class="btn btn-sm btn-primary">Respond</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-tools text-primary me-2"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-phone me-2"></i>Answer Call Queue
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-search me-2"></i>Member Lookup
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-envelope me-2"></i>Send Email
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-clipboard-list me-2"></i>Create Case
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-chart-pie text-primary me-2"></i>
+                    Today's Summary
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <h5 class="text-success">24</h5>
+                        <small class="text-muted">Resolved</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <h5 class="text-info">18</h5>
+                        <small class="text-muted">Calls Taken</small>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-warning">3.2hrs</h5>
+                        <small class="text-muted">Avg Handle Time</small>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-primary">96%</h5>
+                        <small class="text-muted">First Call Resolution</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-bell text-warning me-2"></i>
+                    Priority Alerts
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <div class="alert alert-danger alert-sm py-2">
+                        <strong>Urgent:</strong> Member complaint escalation needed
+                    </div>
+                    <div class="alert alert-warning alert-sm py-2">
+                        <strong>Follow-up:</strong> 3 cases pending callbacks
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public AdminDashboardResponse? DashboardData { get; set; }
+    
+    private int openTickets = 47;
+    private int pendingInquiries = 23;
+    private decimal avgResponseTime = 2.4m;
+    private int satisfactionScore = 94;
+}

@@ -1,0 +1,157 @@
+# Archive - Non-essential files moved here
+archive/
+
+# Examples directory contains templates (KEEP THIS)
+!examples/
+
+# Uploads - User uploaded files (not for repo)
+uploads/
+
+# Storage - Runtime storage directory
+storage/
+
+# Documentation drafts and working files
+docs/
+*.mb
+project.md
+job.md
+roadmap.md
+audit-functionality.md
+database.md
+deploy-workflow.md
+
+# Data files - Medical codes and reference data
+data/
+*.xml
+*.xsd
+*.pdf
+
+# Development and debug scripts
+debug-*.sh
+verify-*.py
+*-mcp.*
+rm-*.sh
+start-*.sh
+
+# PHP files (not part of .NET stack)
+*.php
+
+# Container runtime files
+containerd/
+
+# Public assets (if not used)
+public/
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+packages/
+
+# .NET Build outputs
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+*.exe
+*.exe~
+*.dll
+*.pdb
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
+
+# Logs
+logs/
+*.log
+log/
+
+# Runtime
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+*.cover
+*.coverage
+.nyc_output/
+TestResults/
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vs/
+*.Code-workspace
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Go specific
+vendor/
+*.test
+*.prof
+go.sum
+
+# SSL certificates (keep generated ones out)
+nginx/ssl/*.pem
+nginx/ssl/*.key
+nginx/ssl/*.crt
+nginx/ssl/*.csr
+!nginx/ssl/.gitkeep
+
+# Git and development
+.git/
+.gitattributes
+
+# Claude development assistant files
+.claude/
+
+# Backups and temporary files
+backups/
+tmp/
+temp/
+*.tmp
+*.bak
+*.old
+
+# Docker generated files
+.dockerignore
+
+# Package managers
+yarn.lock
+package-lock.json
+
+# Test outputs
+*.trx
+*.coverage.xml

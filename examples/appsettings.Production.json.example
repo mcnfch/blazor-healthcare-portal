@@ -1,0 +1,30 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=your-db-host;Database=claims_db;Username=your-db-user;Password=your-db-password"
+  },
+  "Jwt": {
+    "Secret": "your-production-jwt-secret-key-minimum-32-characters-long",
+    "Issuer": "YourCompany.ClaimsSystem",
+    "Audience": "YourCompany.ClaimsSystem"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Warning"
+    }
+  },
+  "AllowedHosts": "yourdomain.com,www.yourdomain.com",
+  "RabbitMQ": {
+    "ConnectionString": "amqp://prod-user:prod-password@your-rabbitmq-host:5672/"
+  },
+  "FileUpload": {
+    "MaxFileSizeBytes": 10485760,
+    "AllowedExtensions": [".pdf", ".jpg", ".jpeg", ".png", ".gif", ".doc", ".docx"],
+    "UploadPath": "/app/uploads"
+  },
+  "Security": {
+    "RequireHttps": true,
+    "AllowedOrigins": ["https://yourdomain.com"]
+  }
+}

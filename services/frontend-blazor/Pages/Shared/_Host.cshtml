@@ -1,0 +1,9 @@
+@page
+@namespace BlazorApp.Pages  
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.AspNetCore.Components.Authorization
+@{
+    Layout = "_Layout";
+}
+
+<component type="typeof(App)" render-mode="Server" param-CascadingAuthenticationState="null"/>

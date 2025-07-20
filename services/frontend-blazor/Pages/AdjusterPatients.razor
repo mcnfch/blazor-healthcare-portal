@@ -1,0 +1,148 @@
+@page "/adjuster/patients"
+@using Microsoft.AspNetCore.Authorization
+@using BlazorApp.Services
+@using BlazorApp.Models.DTOs
+@attribute [Authorize]
+@inject IPatientService PatientService
+
+<PageTitle>Patients</PageTitle>
+
+<h1><i class="fas fa-user-injured me-2"></i>Patient Management</h1>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">All Patients</h5>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-primary btn-sm" @onclick="RefreshPatients">
+                    <i class="fas fa-refresh me-2"></i>Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        @if (loading)
+        {
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else if (!patients.Any())
+        {
+            <div class="text-center py-4">
+                <i class="fas fa-user-injured fa-3x text-muted mb-3"></i>
+                <h5>No Patients Found</h5>
+                <p class="text-muted">No patients are registered in the system.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Name</th>
+                            <th>Date of Birth</th>
+                            <th>Gender</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var patient in patients)
+                        {
+                            <tr>
+                                <td><strong>@patient.PatientId</strong></td>
+                                <td>@patient.FirstName @patient.LastName</td>
+                                <td>@DateTime.Parse(patient.DateOfBirth).ToString("MMM dd, yyyy")</td>
+                                <td>@patient.Gender</td>
+                                <td>@patient.PhoneNumber</td>
+                                <td>@patient.Email</td>
+                                <td>
+                                    @if (patient.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewPatientDetails(patient.Id)" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" @onclick="() => ViewPatientClaims(patient.Id)" title="View Claims">
+                                            <i class="fas fa-file-medical"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<PatientDto> patients = new();
+    private bool loading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPatients();
+    }
+
+    private async Task LoadPatients()
+    {
+        try
+        {
+            loading = true;
+            patients = await PatientService.GetAllPatientsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading patients: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task RefreshPatients()
+    {
+        await LoadPatients();
+    }
+
+    private void ViewPatientDetails(int patientId)
+    {
+        // Navigate to patient details - would need to create this page
+        // Navigation.NavigateTo($"/admin/patients/{patientId}");
+    }
+
+    private void ViewPatientClaims(int patientId)
+    {
+        // Navigate to patient's claims - could filter admin claims by patient
+        // Navigation.NavigateTo($"/admin/claims?patientId={patientId}");
+    }
+}

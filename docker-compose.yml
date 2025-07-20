@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: claims_db
+      POSTGRES_USER: claims_user
+      POSTGRES_PASSWORD: claims_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-healthcare-db.sql:/docker-entrypoint-initdb.d/init-healthcare-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - claims-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: claims
+      RABBITMQ_DEFAULT_PASS: claims123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - claims-network
+
+  claims-processor:
+    build: ./services/claims-processor
+    ports:
+      - "50051:50051"
+    environment:
+      - DATABASE_URL=postgresql://claims_user:claims_password@postgres:5432/claims_db
+      - RABBITMQ_URL=amqp://claims:claims123@rabbitmq:5672/
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - claims-network
+    volumes:
+      - ./storage:/app/storage
+
+  doc-service:
+    build: ./services/doc-service
+    ports:
+      - "50052:50052"
+    volumes:
+      - ./storage:/app/storage
+    networks:
+      - claims-network
+
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - CLAIMS_PROCESSOR_URL=claims-processor:50051
+      - DOC_SERVICE_URL=doc-service:50052
+    depends_on:
+      - claims-processor
+      - doc-service
+    networks:
+      - claims-network
+
+  frontend:
+    build: ./services/frontend-blazor
+    ports:
+      - "3000:3000"
+    environment:
+      - ASPNETCORE_URLS=http://+:3000
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=claims_db;Username=claims_user;Password=claims_password
+    depends_on:
+      - postgres
+    networks:
+      - claims-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - api-gateway
+      - frontend
+    networks:
+      - claims-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
+networks:
+  claims-network:
+    driver: bridge

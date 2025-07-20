@@ -1,0 +1,229 @@
+@page "/login"
+@using Microsoft.AspNetCore.Components.Authorization
+@using BlazorApp.Models.DTOs
+@using BlazorApp.Services
+@inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Login - Healthcare Portal</PageTitle>
+
+<div class="login-page">
+    <div class="login-container">
+        <div class="row min-vh-100">
+            <!-- Left side - Branding -->
+            <div class="col-lg-6 d-none d-lg-flex align-items-center justify-content-center bg-primary text-white">
+                <div class="text-center p-5">
+                    <i class="fas fa-hospital-alt fa-5x mb-4"></i>
+                    <h1 class="display-4 fw-bold mb-3">Healthcare Insurance Portal</h1>
+                    <p class="lead">Streamline your healthcare claims and manage your benefits with our comprehensive platform.</p>
+                    <div class="mt-5">
+                        <div class="row text-center">
+                            <div class="col">
+                                <i class="fas fa-file-medical fa-2x mb-2"></i>
+                                <h6>Claims Management</h6>
+                            </div>
+                            <div class="col">
+                                <i class="fas fa-user-md fa-2x mb-2"></i>
+                                <h6>Provider Network</h6>
+                            </div>
+                            <div class="col">
+                                <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                                <h6>Secure & Protected</h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right side - Login Form -->
+            <div class="col-lg-6 d-flex align-items-center justify-content-center">
+                <div class="w-100 p-5" style="max-width: 400px;">
+                    <div class="text-center mb-5">
+                        <h2 class="fw-bold text-dark">Welcome Back</h2>
+                        <p class="text-muted">Please sign in to your account</p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            @errorMessage
+                            <button type="button" class="btn-close" @onclick="() => errorMessage = string.Empty"></button>
+                        </div>
+                    }
+
+                    @if (isLoading)
+                    {
+                        <div class="alert alert-info" role="alert">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm me-2" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                Signing you in...
+                            </div>
+                        </div>
+                    }
+
+                    <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin" FormName="LoginForm">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email Address
+                            </label>
+                            <InputText @bind-Value="loginModel.Email" class="form-control form-control-lg" 
+                                      id="email" type="email" placeholder="Enter your email" disabled="@isLoading" />
+                            <ValidationMessage For="@(() => loginModel.Email)" class="text-danger" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-2"></i>Password
+                            </label>
+                            <div class="input-group">
+                                <InputText @bind-Value="loginModel.Password" class="form-control form-control-lg" 
+                                          id="password" type="@(showPassword ? "text" : "password")" 
+                                          placeholder="Enter your password" disabled="@isLoading" />
+                                <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility" disabled="@isLoading">
+                                    <i class="fas fa-@(showPassword ? "eye-slash" : "eye")"></i>
+                                </button>
+                            </div>
+                            <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-4" disabled="@isLoading">
+                            @if (isLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            }
+                            else
+                            {
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                            }
+                            Sign In
+                        </button>
+                    </EditForm>
+
+                    <!-- Demo Credentials -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6 class="fw-bold text-muted mb-3">
+                            <i class="fas fa-info-circle me-2"></i>Demo Credentials
+                        </h6>
+                        <div class="demo-credentials">
+                            <div class="credential-item mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Patient Portal</strong><br>
+                                        <small class="text-muted">john.patient@example.com / password</small>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary" @onclick="@(() => SetDemoCredentials("john.patient@example.com", "password"))">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="credential-item mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Admin Dashboard</strong><br>
+                                        <small class="text-muted">admin@example.com / password</small>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick="@(() => SetDemoCredentials("admin@example.com", "password"))">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="credential-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Claims Adjuster</strong><br>
+                                        <small class="text-muted">adjuster@example.com / password</small>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-warning" @onclick="@(() => SetDemoCredentials("adjuster@example.com", "password"))">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-page {
+        background-color: #f8f9fa;
+    }
+    
+    .credential-item {
+        padding: 8px 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .credential-item:last-child {
+        border-bottom: none;
+    }
+</style>
+
+@code {
+    private LoginRequest loginModel = new LoginRequest();
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+    private bool showPassword = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if user is already authenticated
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+
+            var result = await AuthService.LoginAsync(loginModel);
+
+            if (result.Success && result.Token != null && result.User != null)
+            {
+                var authStateProvider = (CustomAuthenticationStateProvider)AuthenticationStateProvider;
+                await authStateProvider.LoginAsync(result.Token, result.User);
+
+                // Redirect to homepage
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = result.Message ?? "Login failed. Please check your credentials.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An error occurred during login. Please try again.";
+            Console.WriteLine($"Login error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    private void SetDemoCredentials(string email, string password)
+    {
+        loginModel = new LoginRequest { Email = email, Password = password };
+    }
+}

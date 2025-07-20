@@ -1,0 +1,21 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="text-center text-white">
+        <i class="fas fa-lock fa-3x mb-4"></i>
+        <h2>Access Required</h2>
+        <p class="mb-4">You need to sign in to access this application.</p>
+        <button class="btn btn-light btn-lg" @onclick="GoToLogin">
+            <i class="fas fa-sign-in-alt me-2"></i>
+            Sign In
+        </button>
+    </div>
+</div>
+
+@code {
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}

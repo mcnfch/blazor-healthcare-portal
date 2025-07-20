@@ -1,0 +1,16 @@
+# SSL Certificates Directory
+
+This directory contains SSL certificates for HTTPS.
+
+## Required Files:
+- cert.pem - SSL certificate
+- key.pem - SSL private key
+
+## Generation:
+Run the script to generate self-signed certificates:
+```bash
+./scripts/generate-ssl.sh
+```
+
+## Production:
+Replace with real certificates from your SSL provider.

@@ -1,0 +1,38 @@
+# Docker Compose Override Example
+# Copy to docker-compose.override.yml for local development customizations
+
+version: '3.8'
+
+services:
+  postgres:
+    ports:
+      - "5433:5432"  # Change if port 5432 is in use
+    environment:
+      POSTGRES_DB: claims_db_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    ports:
+      - "5673:5672"   # Change if port 5672 is in use
+      - "15673:15672" # Change if port 15672 is in use
+    environment:
+      RABBITMQ_DEFAULT_USER: dev_claims
+      RABBITMQ_DEFAULT_PASS: dev_password
+
+  frontend:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=claims_db_dev;Username=dev_user;Password=dev_password
+    volumes:
+      - ./services/frontend-blazor:/app  # For hot reload during development
+    
+  nginx:
+    ports:
+      - "8080:80"   # HTTP on different port
+      - "8443:443"  # HTTPS on different port
+
+volumes:
+  postgres_dev_data:

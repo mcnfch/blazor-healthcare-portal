@@ -1,0 +1,272 @@
+@page "/adjuster/claims/{ClaimId:int}"
+@using Microsoft.AspNetCore.Authorization
+@using BlazorApp.Services
+@using BlazorApp.Models.DTOs
+@attribute [Authorize]
+@inject IClaimsService ClaimsService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Claim Details</PageTitle>
+
+@if (loading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (claim == null)
+{
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Claim not found or you don't have permission to view it.
+    </div>
+    <a href="/claims" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Claims
+    </a>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-file-medical me-2"></i>Claim Details</h1>
+        <a href="/claims" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Claims
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Claim Information -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Claim Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-5">Claim Number:</dt>
+                                <dd class="col-sm-7">@claim.ClaimNumber</dd>
+                                <dt class="col-sm-5">Status:</dt>
+                                <dd class="col-sm-7">
+                                    <span class="badge @GetStatusBadgeClass(claim.Status)">@claim.Status</span>
+                                </dd>
+                                <dt class="col-sm-5">Priority:</dt>
+                                <dd class="col-sm-7">
+                                    <span class="badge @GetPriorityBadgeClass(claim.PriorityLevel.ToString())">@claim.PriorityLevel</span>
+                                </dd>
+                                <dt class="col-sm-5">Service Date:</dt>
+                                <dd class="col-sm-7">@DateTime.Parse(claim.ServiceDate).ToString("MMMM dd, yyyy")</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-5">Total Amount:</dt>
+                                <dd class="col-sm-7"><strong>@claim.TotalAmount.ToString("C")</strong></dd>
+                                @if (claim.ApprovedAmount.HasValue)
+                                {
+                                    <dt class="col-sm-5">Approved Amount:</dt>
+                                    <dd class="col-sm-7"><strong class="text-success">@claim.ApprovedAmount.Value.ToString("C")</strong></dd>
+                                }
+                                <dt class="col-sm-5">Submitted:</dt>
+                                <dd class="col-sm-7">@DateTime.Parse(claim.SubmittedDate).ToString("MMMM dd, yyyy")</dd>
+                                @if (!string.IsNullOrEmpty(claim.ProcessedDate))
+                                {
+                                    <dt class="col-sm-5">Processed:</dt>
+                                    <dd class="col-sm-7">@DateTime.Parse(claim.ProcessedDate).ToString("MMMM dd, yyyy")</dd>
+                                }
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-stethoscope me-2"></i>Medical Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Diagnosis Codes</h6>
+                            @if (claim.DiagnosisCodes?.Any() == true)
+                            {
+                                <ul class="list-unstyled">
+                                    @foreach (var diagCode in claim.DiagnosisCodes)
+                                    {
+                                        <li><span class="badge bg-info">@diagCode</span></li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No diagnosis codes available</p>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Procedure Codes</h6>
+                            @if (claim.ProcedureCodes?.Any() == true)
+                            {
+                                <ul class="list-unstyled">
+                                    @foreach (var procCode in claim.ProcedureCodes)
+                                    {
+                                        <li><span class="badge bg-secondary">@procCode</span></li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No procedure codes available</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Information -->
+        <div class="col-md-4">
+            <!-- Patient Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-user me-2"></i>Patient Information</h5>
+                </div>
+                <div class="card-body">
+                    @if (claim.PatientInfo != null)
+                    {
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">Name:</dt>
+                            <dd class="col-sm-7">@claim.PatientInfo.FirstName @claim.PatientInfo.LastName</dd>
+                            <dt class="col-sm-5">Patient ID:</dt>
+                            <dd class="col-sm-7">@claim.PatientInfo.PatientId</dd>
+                            <dt class="col-sm-5">Date of Birth:</dt>
+                            <dd class="col-sm-7">@DateTime.Parse(claim.PatientInfo.DateOfBirth).ToString("MMM dd, yyyy")</dd>
+                            @if (!string.IsNullOrEmpty(claim.PatientInfo.Gender))
+                            {
+                                <dt class="col-sm-5">Gender:</dt>
+                                <dd class="col-sm-7">@claim.PatientInfo.Gender</dd>
+                            }
+                            @if (!string.IsNullOrEmpty(claim.PatientInfo.PhoneNumber))
+                            {
+                                <dt class="col-sm-5">Phone:</dt>
+                                <dd class="col-sm-7">@claim.PatientInfo.PhoneNumber</dd>
+                            }
+                        </dl>
+                    }
+                </div>
+            </div>
+
+            <!-- Provider Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-user-md me-2"></i>Provider Information</h5>
+                </div>
+                <div class="card-body">
+                    @if (claim.ProviderInfo != null)
+                    {
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">Name:</dt>
+                            <dd class="col-sm-7">@claim.ProviderInfo.ProviderName</dd>
+                            <dt class="col-sm-5">Provider ID:</dt>
+                            <dd class="col-sm-7">@claim.ProviderInfo.ProviderId</dd>
+                            <dt class="col-sm-5">Type:</dt>
+                            <dd class="col-sm-7">@claim.ProviderInfo.ProviderType</dd>
+                            @if (claim.ProviderInfo.Specialties?.Any() == true)
+                            {
+                                <dt class="col-sm-5">Specialties:</dt>
+                                <dd class="col-sm-7">
+                                    @foreach (var specialty in claim.ProviderInfo.Specialties)
+                                    {
+                                        <span class="badge bg-light text-dark me-1">@specialty</span>
+                                    }
+                                </dd>
+                            }
+                            @if (!string.IsNullOrEmpty(claim.ProviderInfo.PhoneNumber))
+                            {
+                                <dt class="col-sm-5">Phone:</dt>
+                                <dd class="col-sm-7">@claim.ProviderInfo.PhoneNumber</dd>
+                            }
+                        </dl>
+                    }
+                </div>
+            </div>
+
+            <!-- Insurance Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-shield-alt me-2"></i>Insurance Information</h5>
+                </div>
+                <div class="card-body">
+                    @if (claim.InsurancePlanInfo != null)
+                    {
+                        <dl class="row mb-0">
+                            <dt class="col-sm-5">Company:</dt>
+                            <dd class="col-sm-7">@claim.InsurancePlanInfo.CompanyName</dd>
+                            <dt class="col-sm-5">Plan:</dt>
+                            <dd class="col-sm-7">@claim.InsurancePlanInfo.PlanName</dd>
+                            <dt class="col-sm-5">Plan Code:</dt>
+                            <dd class="col-sm-7">@claim.InsurancePlanInfo.PlanCode</dd>
+                            <dt class="col-sm-5">Type:</dt>
+                            <dd class="col-sm-7">@claim.InsurancePlanInfo.PlanType</dd>
+                        </dl>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int ClaimId { get; set; }
+    
+    private ClaimResponse? claim;
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadClaim();
+    }
+
+    private async Task LoadClaim()
+    {
+        try
+        {
+            loading = true;
+            claim = await ClaimsService.GetClaimByIdAsync(ClaimId);
+        }
+        catch (Exception ex)
+        {
+            // Handle error - could show toast notification here
+            Console.WriteLine($"Error loading claim: {ex.Message}");
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status?.ToLower() switch
+        {
+            "approved" => "bg-success",
+            "denied" => "bg-danger",
+            "under review" or "pending" => "bg-warning",
+            "processing" => "bg-info",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string GetPriorityBadgeClass(string priority)
+    {
+        return priority?.ToLower() switch
+        {
+            "high" => "bg-danger",
+            "medium" => "bg-warning",
+            "low" => "bg-info",
+            _ => "bg-secondary"
+        };
+    }
+}

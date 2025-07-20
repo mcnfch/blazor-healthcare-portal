@@ -1,0 +1,168 @@
+syntax = "proto3";
+
+option csharp_namespace = "ClaimsProcessor.Protos";
+
+package claims;
+
+service ClaimsService {
+  rpc SubmitClaim(SubmitClaimRequest) returns (SubmitClaimResponse);
+  rpc GetClaim(GetClaimRequest) returns (GetClaimResponse);
+  rpc UpdateClaimStatus(UpdateClaimStatusRequest) returns (UpdateClaimStatusResponse);
+  rpc ListClaims(ListClaimsRequest) returns (ListClaimsResponse);
+  rpc GetClaimsByProvider(GetClaimsByProviderRequest) returns (ListClaimsResponse);
+  rpc ProcessClaimPayment(ProcessPaymentRequest) returns (ProcessPaymentResponse);
+}
+
+message SubmitClaimRequest {
+  int32 patient_id = 1;
+  int32 insurance_plan_id = 2;
+  int32 provider_id = 3;
+  string claim_type = 4;
+  string total_amount = 5; // Using string for decimal precision
+  string service_date = 6;
+  repeated string diagnosis_codes = 7;
+  repeated string procedure_codes = 8;
+  int32 priority_level = 9;
+  repeated ClaimLineItem line_items = 10;
+}
+
+message SubmitClaimResponse {
+  bool success = 1;
+  string message = 2;
+  string claim_number = 3;
+  int32 claim_id = 4;
+}
+
+message GetClaimRequest {
+  int32 claim_id = 1;
+  string claim_number = 2; // Alternative lookup
+}
+
+message GetClaimResponse {
+  bool success = 1;
+  HealthcareClaim claim = 2;
+  string message = 3;
+}
+
+message UpdateClaimStatusRequest {
+  int32 claim_id = 1;
+  string status = 2;
+  string review_notes = 3;
+  string denial_reason = 4;
+  int32 assigned_adjuster_id = 5;
+}
+
+message UpdateClaimStatusResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ListClaimsRequest {
+  int32 patient_id = 1;
+  string status = 2;
+  string claim_type = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+  string start_date = 6;
+  string end_date = 7;
+}
+
+message ListClaimsResponse {
+  bool success = 1;
+  repeated HealthcareClaim claims = 2;
+  int32 total_count = 3;
+  string message = 4;
+}
+
+message GetClaimsByProviderRequest {
+  int32 provider_id = 1;
+  string status = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ProcessPaymentRequest {
+  int32 claim_id = 1;
+  string approved_amount = 2;
+  string patient_responsibility = 3;
+  string insurance_payment = 4;
+}
+
+message ProcessPaymentResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message HealthcareClaim {
+  int32 id = 1;
+  string claim_number = 2;
+  int32 patient_id = 3;
+  int32 insurance_plan_id = 4;
+  int32 provider_id = 5;
+  string claim_type = 6;
+  string status = 7;
+  int32 priority_level = 8;
+  string total_amount = 9;
+  string approved_amount = 10;
+  string patient_responsibility = 11;
+  string insurance_payment = 12;
+  string service_date = 13;
+  repeated string diagnosis_codes = 14;
+  repeated string procedure_codes = 15;
+  string submitted_date = 16;
+  string processed_date = 17;
+  string paid_date = 18;
+  int32 assigned_adjuster_id = 19;
+  string review_notes = 20;
+  string denial_reason = 21;
+  repeated ClaimLineItem line_items = 22;
+  PatientInfo patient_info = 23;
+  ProviderInfo provider_info = 24;
+  InsurancePlanInfo insurance_plan_info = 25;
+}
+
+message ClaimLineItem {
+  int32 id = 1;
+  int32 line_number = 2;
+  string procedure_code = 3;
+  string procedure_description = 4;
+  string diagnosis_code = 5;
+  string service_date = 6;
+  int32 quantity = 7;
+  string unit_price = 8;
+  string total_amount = 9;
+  string allowed_amount = 10;
+  string deductible_amount = 11;
+  string copay_amount = 12;
+  string coinsurance_amount = 13;
+  string not_covered_amount = 14;
+  string status = 15;
+  string denial_reason = 16;
+}
+
+message PatientInfo {
+  int32 id = 1;
+  string patient_id = 2;
+  string first_name = 3;
+  string last_name = 4;
+  string date_of_birth = 5;
+  string gender = 6;
+  string phone_number = 7;
+}
+
+message ProviderInfo {
+  int32 id = 1;
+  string provider_id = 2;
+  string provider_name = 3;
+  string provider_type = 4;
+  repeated string specialties = 5;
+  string phone_number = 6;
+}
+
+message InsurancePlanInfo {
+  int32 id = 1;
+  string plan_name = 2;
+  string plan_code = 3;
+  string plan_type = 4;
+  string company_name = 5;
+}

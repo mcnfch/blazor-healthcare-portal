@@ -1,0 +1,131 @@
+@using BlazorApp.Models.DTOs
+
+<div class="row">
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">@DashboardData?.Stats.TotalClaims</h3>
+                        <p class="mb-0">Total Claims</p>
+                    </div>
+                    <i class="fas fa-file-medical fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">@DashboardData?.Stats.ApprovedClaims</h3>
+                        <p class="mb-0">Approved Claims</p>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">@DashboardData?.Stats.PendingClaims</h3>
+                        <p class="mb-0">Pending Review</p>
+                    </div>
+                    <i class="fas fa-clock fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-3 mb-4">
+        <div class="card border-0 bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h3 class="mb-1">$@(DashboardData?.Stats.TotalClaimValue.ToString("N0") ?? "0")</h3>
+                        <p class="mb-0">Coverage This Year</p>
+                    </div>
+                    <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list-alt text-primary me-2"></i>
+                    Recent Claims
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Claim #</th>
+                                <th>Date</th>
+                                <th>Provider</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>CLM-001</strong></td>
+                                <td>@DateTime.Today.AddDays(-5).ToString("MMM dd")</td>
+                                <td>City Medical Center</td>
+                                <td>$2,450.00</td>
+                                <td><span class="badge bg-success">Approved</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>CLM-002</strong></td>
+                                <td>@DateTime.Today.AddDays(-10).ToString("MMM dd")</td>
+                                <td>Downtown Clinic</td>
+                                <td>$180.00</td>
+                                <td><span class="badge bg-warning">Pending</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-md text-primary me-2"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Submit New Claim
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-search me-2"></i>Find Provider
+                    </button>
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-file-download me-2"></i>Download EOB
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public AdminDashboardResponse? DashboardData { get; set; }
+}

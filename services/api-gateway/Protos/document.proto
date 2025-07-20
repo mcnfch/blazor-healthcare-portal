@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+option csharp_namespace = "DocumentService.Protos";
+
+package document;
+
+service DocumentService {
+  rpc ProcessDocument(ProcessDocumentRequest) returns (ProcessDocumentResponse);
+  rpc GetDocumentMetadata(GetDocumentMetadataRequest) returns (GetDocumentMetadataResponse);
+  rpc ListClaimDocuments(ListClaimDocumentsRequest) returns (ListClaimDocumentsResponse);
+  rpc DeleteDocument(DeleteDocumentRequest) returns (DeleteDocumentResponse);
+}
+
+message ProcessDocumentRequest {
+  int32 claim_id = 1;
+  string filename = 2;
+  bytes file_data = 3;
+  string file_type = 4;
+  string document_type = 5;
+  int32 uploaded_by = 6;
+}
+
+message ProcessDocumentResponse {
+  bool success = 1;
+  string message = 2;
+  int32 document_id = 3;
+  DocumentMetadata metadata = 4;
+}
+
+message GetDocumentMetadataRequest {
+  int32 document_id = 1;
+}
+
+message GetDocumentMetadataResponse {
+  bool success = 1;
+  DocumentMetadata metadata = 2;
+  string message = 3;
+}
+
+message ListClaimDocumentsRequest {
+  int32 claim_id = 1;
+}
+
+message ListClaimDocumentsResponse {
+  bool success = 1;
+  repeated DocumentMetadata documents = 2;
+  string message = 3;
+}
+
+message DeleteDocumentRequest {
+  int32 document_id = 1;
+  int32 deleted_by = 2;
+}
+
+message DeleteDocumentResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message DocumentMetadata {
+  int32 id = 1;
+  int32 claim_id = 2;
+  string document_type = 3;
+  string filename = 4;
+  string file_path = 5;
+  int64 file_size = 6;
+  string mime_type = 7;
+  int32 uploaded_by = 8;
+  string upload_date = 9;
+  bool is_processed = 10;
+  string processing_status = 11;
+  map<string, string> extracted_data = 12;
+}
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+  bool healthy = 1;
+  string message = 2;
+}

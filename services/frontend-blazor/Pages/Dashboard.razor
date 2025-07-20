@@ -1,0 +1,52 @@
+@page "/dashboard"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+<PageTitle>Dashboard</PageTitle>
+
+<h1>Dashboard</h1>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="alert alert-success">
+            <h4>Welcome to the Healthcare Portal Dashboard!</h4>
+            <p>You have successfully logged in. This is a working dashboard page.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-file-medical me-2"></i>Claims</h5>
+            </div>
+            <div class="card-body">
+                <p>Manage your insurance claims</p>
+                <a href="/claims" class="btn btn-primary">View Claims</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-user-md me-2"></i>Providers</h5>
+            </div>
+            <div class="card-body">
+                <p>Find healthcare providers</p>
+                <a href="/providers" class="btn btn-primary">View Providers</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-user me-2"></i>Profile</h5>
+            </div>
+            <div class="card-body">
+                <p>Manage your profile</p>
+                <a href="/profile" class="btn btn-primary">View Profile</a>
+            </div>
+        </div>
+    </div>
+</div>
