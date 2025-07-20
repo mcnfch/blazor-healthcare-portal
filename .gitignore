@@ -138,8 +138,6 @@ nginx/ssl/*.csr
 .git/
 .gitattributes
 
-# Claude development assistant files
-.claude/
 
 # Backups and temporary files
 backups/
