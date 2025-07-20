@@ -17,7 +17,7 @@ This project showcases professional software engineering skills through:
 
 ## 🛠️ Technologies Showcased
 
-**Backend:** ASP.NET Core 8 • Entity Framework Core • PostgreSQL • gRPC • JWT Authentication  
+**Backend:** ASP.NET Core 8 • Entity Framework Core • AWS Aurora PostgreSQL • gRPC • JWT Authentication  
 **Frontend:** Blazor Server • Bootstrap 5 • JavaScript • SignalR  
 **Infrastructure:** Docker • Docker Compose • Nginx • RabbitMQ  
 **Cloud:** AWS Aurora PostgreSQL • AWS RDS • AWS VPC Security Groups  
